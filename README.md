@@ -32,7 +32,7 @@ virtualenv -p /usr/bin/python3 venv
 source venv/bin/activate
 
 #install requirements
-pip install -r src/requirements.txt
+pip install -r requirements.txt
 
 #run the server
 python src/app.py
