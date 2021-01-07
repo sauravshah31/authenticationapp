@@ -5,11 +5,11 @@ Python Flask REST API authentication app
 ```
 authenticationapp
 ├── README.md
+├── requirements.txt  
 ├── docs                    //documentation
 |   ├── authorize_api.md    //doc forapi routes
 ├── src
-|   ├── api_test.py         //test cases for api routes
-|   ├── requirements.txt    
+|   ├── api_test.py         //test cases for api routes  
 |   ├── app.py              //main
 |   ├── authorizerapp
 |   |   ├── config.py       //app config file
