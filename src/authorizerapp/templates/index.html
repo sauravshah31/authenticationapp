@@ -5,23 +5,545 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+   
 
     {% if title %}
         <title> {{ title }} | Authentication REST API Demo</title>
     {% else %}
         <title>Authentication REST API Demo</title>
     {% endif %}
+
+    <style>
+        body{
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+        .header{
+            min-height: 70px;
+            padding: 5px;
+            box-shadow:0px 1px 5px 0px #ccc;
+            border-bottom:"1px solid #ccc";
+            margin: 0px;
+        }
+        .header span{
+            display: inline-block;
+        }
+        .logo{
+            font-size: 2em;
+        }
+        .logo a{
+            text-decoration: none;
+        }
+        .clickable:hover{
+            cursor: pointer;
+        }
+        .container {
+            max-width: 700px;
+            margin:auto;
+            padding: 10px;
+            font-size: 1.5em;
+        }
+        main {
+            margin-top: 50px;
+        }
+        .hidden{
+            display: none !important;
+        }
+
+        #poster{
+            border: 1px solid black;
+            background-color:white;
+            max-width: 400px;
+            min-width: 300px;
+            display: inline-block;
+            position: fixed;
+            right: 0px;
+            z-index: 999;
+            margin: 0px;
+        }
+        #poster .head{
+            border-bottom: 1px solid black;
+            font-size: 1.3em;
+            background-color: blanchedalmond;
+            
+        }
+        #poster .indicator .hidden{
+            display: inline-block !important;
+            background-color: white;
+        }
+        #poster .head span{
+            display: inline-block;
+            width: 50%;
+            background-color: #B5C2C2;
+            float: left;
+            text-align: center;
+            height: 30px;
+            padding-top: 7px;
+        }
+        #poster .head span:hover{
+            background-color: #F9FFFF;
+            cursor: pointer;
+        }
+        #poster .indicator span{
+            background-color: black;
+            display: inline-block;
+            width: 50%;
+            float: left;
+            height: 3px;
+        }
+        #poster label{
+            display: block;
+            padding: 5px;
+        }
+        #poster label span, #user div{
+            display: block;
+            font-size: 1.3em;
+            font-family: monospace;
+            margin-bottom: 5px;
+        }
+        #poster label input{
+            display: inline-block;
+            width: 92%;
+        }
+        
+        #poster .submit,#user button{
+            display: inline-block;
+            font-size: 1.3em;
+            min-height: 30px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        #poster .submit:hover,#user button:hover{
+            cursor: pointer;
+            background-color: #36DC74;
+        }
+        #poster .log{
+            min-height: 20px;
+            display: inline-block;
+            width: 100%;
+            font-size: 0.7em;
+        }
+        .success{
+            color: lightgreen;
+        }
+        .failure { 
+            color: lightsalmon;
+        }
+        code{
+            display: block;
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
     
+    <div class="header">
+        <span class="logo">
+            <a href="/">HomePage</a>
+        </span>
+
+        <span style="float:right;" class="clickable" id="user-icon" onclick="togglePoster()">
+            <img src="{{url_for('static',filename='icons/login.svg')}}" height="50"/>
+        </span>
+    </div>
+    <div id="poster" class="hidden">
+        <div id="sign">
+            <div class="head">
+                <span>Login</span>
+                <span>Register</span>
+            </div>
+
+            <div class="indicator">
+                <span class="login"></span>
+                <span class="register hidden" ></span>
+            </div>
+            <div class="body">
+                <div class="login" id="login-box">
+                    <div class="log">
+                    </div>
+                    <form id="login">
+                        <label>
+                            <span>
+                                Username / Email
+                            </span>
+                            <input type="text" id="uname" required>
+                        </label>
+                        <label>
+                            <span>
+                                Password
+                            </span>
+                            <input type="password" id="password" required/>
+                        </label>
+                        <input type="submit" value="Log In" class="submit"/>
+                    </form>
+                </div>
+                <div class="register hidden" id="register-box">
+                    <div class="log">
+                    </div>
+                    <form id="register">
+                        <label>
+                            <span>
+                                Username
+                            </span>
+                            <input type="text" id="uname" required>
+                        </label>
+
+                        <label>
+                            <span>
+                                Email
+                            </span>
+                            <input type="email" id="email" required/>
+                        </label>
+                        <label>
+                            <span>
+                                Password
+                            </span>
+                            <input type="password" id="password" required/>
+                        </label>
+                        <input type="submit" value="Register" class="submit"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="user" class="hidden">
+            <div></div>
+            <div></div>
+            <button>Logout</button>
+        </div>
+    </div>
+
+    <main>
+        <div class="container">
+            <div class="section">
+                <h2>Authentication using Flask REST API</h2>
+                <hr/>
+                <div class="content">
+                    <h3>API End points</h3>
+                    <h4>/api/login</h4>
+                    <code>
+                        <b>Methods</b> : POST <br/><br/>
+                        <b>Request Data</b>: <br/>
+                            name : username / email of the user  <br/>
+                            password : password of the user <br/><br/>
+                        <b>Response Data</b>:<br/>
+                            <mark>Status 200:</mark><br/>
+                                token: jwt token<br/>
+                                user_name : username of the logged in user<br/>
+                                email : email of the logged in user<br/>
+                            <mark>Status Others</mark><br/>
+                                description: description of the error<br/>
+                    </code>
+                    <h4>/api/register</h4>
+                    <code>
+                        <b>Methods</b> : POST <br/><br/>
+                        <b>Request Data</b>: <br/>
+                            user_name : username of the user  <br/>
+                            email:email of the user <br/>
+                            password : password of the user <br/><br/>
+                        <b>Response Data</b>:<br/>
+                            <mark>Status 200:</mark><br/>
+                                success: true<br/>
+                                message : New user created<br/>
+                            <mark>Status Others</mark><br/>
+                                description: description of the error<br/>
+                    </code>
+
+                    <h4>/api/logout</h4>
+                    <code>
+                        <b>Methods</b> : GET <br/><br/>
+                        <b>Request Header</b>: <br/>
+                            x-access-token : jwt access token  <br/>
+                        <b>Response Data</b>:<br/>
+                            <mark>Status 200:</mark><br/>
+                                success: true<br/>
+                                message : Logged out<br/>
+                            <mark>Status Others</mark><br/>
+                                description: description of the error<br/>
+                    </code>
+
+                    <h4>/api/verify</h4>
+                    <code>
+                        <b>Methods</b> : GET <br/><br/>
+                        <b>Request Header</b>: <br/>
+                            x-access-token : jwt access token  <br/>
+                        <b>Response Data</b>:<br/>
+                            <mark>Status 200:</mark><br/>
+                                user_name: username of current user<br/>
+                                email : email of current user<br/>
+                            <mark>Status Others</mark><br/>
+                                description: description of the error<br/>
+                    </code>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script  type="module" src="{{url_for('static',filename='vendor/fetch-min.js')}}"></script>
+    <script>
+        const loginEle = {
+            box:null,
+            indicator:null,
+            log:null,
+            uname:null,
+            password:null,
+            sending:false
+        };
+
+        const registerEle = {
+            box:null,
+            indicator:null,
+            log:null,
+            uname:null,
+            email:null,
+            password:null,
+            sending:false
+        };
+
+        const userInfoEle = {
+            box:null,
+            name:null,
+            email:null,
+            logout:null
+        };
+
+        const posterEle = {
+            box:null,
+            displayed:false
+        };
+        let signEle = null;
+        let userIcon = null;
+
+        initLoginEle = ()=>{
+            loginEle.box = document.getElementById('login-box');
+            loginEle.indicator = document.querySelector('#poster #sign .indicator span');
+            loginEle.log = document.querySelector('#poster #sign .body .login .log');
+            loginEle.uname = document.querySelector('#poster #sign .body .login #uname');
+            loginEle.password = document.querySelector('#poster #sign .body .login #password');
+
+        };
+
+        initRegisterEle = ()=>{
+            registerEle.box = document.getElementById('register-box');
+            registerEle.indicator = document.querySelectorAll('#poster #sign .indicator span')[1];
+            registerEle.log = document.querySelector('#poster #sign .body .register .log');
+            registerEle.uname = document.querySelector('#poster #sign .body .register #uname');
+            registerEle.email = document.querySelector('#poster #sign .body .register #email');
+            registerEle.password = document.querySelector('#poster #sign .body .register #password');
+        };
+
+        initUserInfoEle = ()=>{
+            userInfoEle.box = document.getElementById('user');
+            const div = document.querySelectorAll('#user div');
+            userInfoEle.name = div[0];
+            userInfoEle.email = div[1];
+            userInfoEle.logout = document.querySelector('#user button');
+        };
+
+        initListeners = ()=>{
+            document.querySelector('#poster #sign #login').addEventListener(
+                'submit',
+                handleLoginSubmit
+            );
+
+            document.querySelector('#poster #sign #register').addEventListener(
+                'submit',
+                handleRegisterSubmit
+            );            
+
+            const btn = document.querySelectorAll('#poster #sign .head span');
+            btn[0].addEventListener(
+                'click',
+                handleLoginClick
+            );
+            btn[1].addEventListener(
+                'click',
+                handleRegisterClick
+            );
+
+            userInfoEle.logout.addEventListener('click',handleLogout);
+
+        };
+
+        handleLoginSubmit = (e)=>{
+            e.preventDefault();
+            if(loginEle.sending)
+                return;
+            loginEle.sending=true;
+            const uname = loginEle.uname.value;
+            const password = loginEle.password.value;
+            
+            loginEle.log.classList.remove('failure');
+            loginEle.log.classList.add('success');
+            loginEle.log.textContent = "Sending";
 
 
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+            fetch('/api/login',{
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(
+                    {
+                        'name': uname,
+                        'password':password
+                    }
+                )
+            })
+            .then(res=>res.json())
+            .then((res)=>{
+                if(res.status && res.status!==200){
+                    throw new Error("Invalid Login");
+                }
+                document.getElementById('login').reset();
+                loginEle.log.textContent = "Log in successful";
+                handleLoggedIn(res);
+                togglePoster();
+            })
+            .catch((err)=>{
+                loginEle.log.classList.remove('success');
+                loginEle.log.classList.add('failure');
+                loginEle.log.textContent = err;
+            })
+            .finally(()=>{
+                loginEle.sending=false;
+            });
+        };
+
+        handleRegisterSubmit = (e)=>{
+            e.preventDefault();
+            if(registerEle.sending)
+                return;
+            registerEle.sending=true;
+            const uname = registerEle.uname.value;
+            const email = registerEle.email.value;
+            const password = registerEle.password.value;
+
+            registerEle.log.classList.remove('failure');
+            registerEle.log.classList.add('success');
+            registerEle.log.textContent = "Sending";
+
+
+            fetch('/api/register',{
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(
+                    {
+                        'user_name': uname,
+                        'email':email,
+                        'password':password
+                    }
+                )
+            })
+            .then(res=>res.json())
+            .then((res)=>{
+                if(res.status && res.status!==200){
+                    throw new Error(res.description);
+                }
+                registerEle.log.textContent = "You are now registered";
+                document.getElementById('register').reset();
+            })
+            .catch((err)=>{
+                registerEle.log.classList.remove('success');
+                registerEle.log.classList.add('failure');
+                registerEle.log.textContent = err;
+            })
+            .finally(()=>{
+                registerEle.sending=false;
+            });
+        };
+
+        handleLoggedIn = (res)=>{
+            loginEle.log.textContent = "";
+            registerEle.log.textContent = "";
+            document.cookie="token="+res.token;
+            signEle.classList.add('hidden');
+            userInfoEle.box.classList.remove('hidden');
+            userInfoEle.name.textContent = res.user_name;
+            userInfoEle.email.textContent = res.email;
+            userIcon.src="{{url_for('static',filename='icons/avator.jpeg')}}"
+        };
+
+        handleLogout = ()=>{
+            let cookie = parseCookie();
+            document.cookie="token= ";
+            fetch('/api/logout',{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-access-token':cookie.token
+                }
+            })
+            .then(res=>res.json())
+            .then((res)=>{
+                signEle.classList.remove('hidden');
+                userInfoEle.box.classList.add('hidden');
+                userIcon.src="{{url_for('static',filename='icons/login.svg')}}"
+            })
+
+        };
+
+        handleLoginClick = ()=>{
+            loginEle.indicator.classList.remove('hidden');
+            loginEle.box.classList.remove('hidden');
+            registerEle.indicator.classList.add('hidden');
+            registerEle.box.classList.add('hidden');
+
+        };
+
+        handleRegisterClick = ()=>{
+            registerEle.indicator.classList.remove('hidden');
+            registerEle.box.classList.remove('hidden');
+            loginEle.indicator.classList.add('hidden');
+            loginEle.box.classList.add('hidden');
+        };
+
+        parseCookie = ()=>{
+            let cookie = decodeURIComponent(document.cookie);
+            cookie = cookie.split(';');
+            let cookie_map = {}
+            for(let i=0;i<cookie.length;i++){
+                let curr = cookie[i].split('=');
+                cookie_map[curr[0].trim()]=curr[1]&&curr[1].trim();
+            }
+            return cookie_map;
+        }
+
+        verifyLoggedIn = ()=>{
+            let cookie = parseCookie();
+            fetch('/api/verify',{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-access-token':cookie.token
+                }
+            })
+            .then(res=>res.json())
+            .then((res)=>{
+                if(res.status && res.status===200){
+                    res.token = cookie.token;
+                    handleLoggedIn(res);
+                }
+            })
+        };
+
+        togglePoster = ()=>{
+            if(posterEle.displayed){
+                posterEle.displayed=false;
+                posterEle.box.classList.add('hidden');
+            }else{
+                posterEle.box.classList.remove('hidden');
+                posterEle.displayed=true;
+            }
+        }
+
+        window.onload = ()=>{
+            initLoginEle();
+            initRegisterEle();
+            signEle = document.getElementById('sign');
+            userIcon = document.querySelector('#user-icon img');
+            posterEle.box = document.getElementById('poster');
+            initUserInfoEle();
+            initListeners();
+            verifyLoggedIn();
+        };
+    </script>
 </body>
 </html>

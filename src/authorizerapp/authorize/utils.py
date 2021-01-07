@@ -13,6 +13,9 @@ from authorizerapp.models.users import Users
 
 
 def blacklist_token(token):
+    """
+        Blacklist the jwt token
+    """
     curr_token = BlacklistToken(token=token)
     try:
         db.session.add(curr_token)
@@ -22,6 +25,9 @@ def blacklist_token(token):
     return True
 
 def remove_from_blacklist(token):
+    """
+        Remove jwt token from black list
+    """
     curr_token = BlacklistToken.query.filter_by(token=token).first()
     if curr_token == None:
         return True
@@ -33,7 +39,15 @@ def remove_from_blacklist(token):
         return False
     return True
 
+
 def get_token(public_key,delta):
+    """
+        Get jwt token encoded in 'UTF-8' format
+
+        Parameters:
+            public_key : User's public key
+            delta : expiration time in minutes
+    """
     return jwt.encode(
             {
                 'public_key':public_key,
@@ -43,7 +57,11 @@ def get_token(public_key,delta):
             algorithm="HS256"
         )
     
+
 def token_required(func):
+    """
+        Decorator for making sure token is passed in
+    """
     @wraps(func)
     def decorator(*args,**kwargs):
         token = request.headers.get('x-access-token') or request.headers.get('X-Access-Token')

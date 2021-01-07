@@ -1,6 +1,10 @@
 from authorizerapp import db
 
 class Users(db.Model):
+    """
+        Table: Users
+            Stores users data
+    """
     user_id = db.Column(db.Integer, primary_key = True)
     user_name = db.Column(db.String(50),unique=True,nullable=False)
     email = db.Column(db.String(150),unique=True,nullable=False)
