@@ -22,3 +22,18 @@ authenticationapp
 ```
 
 # Running the script
+```
+#clone the repo
+git clone https://github.com/sauravshah31/authenticationapp.git
+cd authenticationapp
+
+#create a virtual environment
+virtualenv -p /usr/bin/python3 venv
+source venv/bin/activate
+
+#install requirements
+pip install -r src/requirements.txt
+
+#run the server
+python src/app.py
+```
