@@ -1,6 +1,5 @@
 # [Authenticationapp](https://authorizationapp.herokuapp.com/)
 Python Flask REST API authentication app \
-Deployed to : https://authorizationapp.herokuapp.com/
 
 # directory structure
 ```
